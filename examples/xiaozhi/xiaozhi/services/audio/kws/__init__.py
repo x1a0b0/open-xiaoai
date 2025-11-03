@@ -11,6 +11,10 @@ from xiaozhi.services.audio.stream import MyAudio
 from xiaozhi.services.protocols.typing import AudioConfig, DeviceState
 from xiaozhi.utils.base import get_env
 
+# Performance tuning constants
+SLEEP_INTERVAL_PAUSED = 0.02  # Sleep when KWS is paused (20ms)
+SLEEP_INTERVAL_ACTIVE = 0.005  # Sleep during active detection (5ms)
+
 
 class _KWS:
     def __init__(self):
@@ -62,7 +66,7 @@ class _KWS:
                     DeviceState.SPEAKING,
                 ]
             ):
-                time.sleep(0.02)  # Longer sleep when paused to reduce CPU usage
+                time.sleep(SLEEP_INTERVAL_PAUSED)  # Longer sleep when paused to reduce CPU usage
                 continue
 
             result = SherpaOnnx.kws(frames)
@@ -71,7 +75,7 @@ class _KWS:
                 self.on_message(result)
             
             # Small sleep to prevent CPU saturation
-            time.sleep(0.005)
+            time.sleep(SLEEP_INTERVAL_ACTIVE)
 
     def on_message(self, text: str):
         asyncio.run_coroutine_threadsafe(

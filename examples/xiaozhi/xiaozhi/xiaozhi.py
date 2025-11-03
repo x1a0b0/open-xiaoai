@@ -19,6 +19,10 @@ from xiaozhi.utils.base import get_env
 from xiaozhi.utils.config import ConfigManager
 from xiaozhi.xiaoai import XiaoAI
 
+# Performance tuning constants
+SLEEP_INTERVAL_LOOP = 0.005  # Main loop sleep interval (5ms)
+
+
 
 class XiaoZhi:
     """智能音箱应用程序主类"""
@@ -174,7 +178,7 @@ class XiaoZhi:
                     elif event_type == EventType.SCHEDULE_EVENT:
                         self._process_scheduled_tasks()
 
-            time.sleep(0.005)  # Reduced sleep for better responsiveness
+            time.sleep(SLEEP_INTERVAL_LOOP)  # Reduced sleep for better responsiveness
 
     def _process_scheduled_tasks(self):
         """处理调度任务"""
@@ -308,7 +312,7 @@ class XiaoZhi:
         while self.running:
             if self.audio_codec.input_stream.is_active():
                 self.events[EventType.AUDIO_INPUT_READY_EVENT].set()
-            time.sleep(0.005)  # Reduced sleep for lower latency
+            time.sleep(SLEEP_INTERVAL_LOOP)  # Reduced sleep for lower latency
 
     async def _on_audio_channel_closed(self):
         """音频通道关闭回调"""

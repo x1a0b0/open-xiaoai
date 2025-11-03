@@ -9,6 +9,11 @@ from xiaozhi.services.audio.vad.silero import Silero
 from xiaozhi.services.protocols.typing import AudioConfig
 from xiaozhi.utils.base import get_env
 
+# Performance tuning constants
+SLEEP_INTERVAL_PAUSED = 0.05  # Sleep when VAD is paused (50ms)
+SLEEP_INTERVAL_ACTIVE = 0.005  # Sleep during active detection (5ms)
+BYTES_PER_SAMPLE = 2  # 16-bit audio = 2 bytes per sample
+
 
 class _VAD:
     def __init__(self):
@@ -106,7 +111,7 @@ class _VAD:
                 # 如果之前没有语音片段，则将当前帧加入静音片段
                 self.silence_frames += frames
                 # 确保静音片段长度不超过 1s
-                max_len = 1 * 2 * self.sample_rate
+                max_len = BYTES_PER_SAMPLE * self.sample_rate
                 if len(self.silence_frames) > max_len:
                     del self.silence_frames[:-max_len]
             else:
@@ -158,13 +163,13 @@ class _VAD:
         while True:
             # 如果暂停或者音频流未初始化，则跳过
             if self.paused or not self.stream:
-                time.sleep(0.05)  # Reduced CPU usage when paused
+                time.sleep(SLEEP_INTERVAL_PAUSED)  # Reduced CPU usage when paused
                 continue
 
             # 读取缓冲区音频数据
             frames = self.stream.read(self.frame_size)
-            if len(frames) != self.frame_size * 2:
-                time.sleep(0.005)  # Shorter sleep for faster response
+            if len(frames) != self.frame_size * BYTES_PER_SAMPLE:
+                time.sleep(SLEEP_INTERVAL_ACTIVE)  # Shorter sleep for faster response
                 continue
 
             # 检测是否是语音
@@ -176,7 +181,7 @@ class _VAD:
                 self._handle_silence_frame(frames)
 
             # Small sleep to prevent CPU saturation while maintaining responsiveness
-            time.sleep(0.005)
+            time.sleep(SLEEP_INTERVAL_ACTIVE)
 
 
 VAD = _VAD()
