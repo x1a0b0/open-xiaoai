@@ -72,6 +72,7 @@
 
 如果你想要了解更多技术细节，下面的链接可能对你有用：
 
+- 👉 [性能优化指南](docs/performance.md)
 - https://github.com/yihong0618/gitblog/issues/258
 - https://github.com/jialeicui/open-lx01
 - https://github.com/duhow/xiaoai-patch
