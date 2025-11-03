@@ -96,7 +96,7 @@ class MyStream:
     def read(self, num_frames=None, exception_on_overflow=False) -> bytes:
         if num_frames is None:
             data = bytes(self.input_bytes)
-            self.input_bytes = bytearray()
+            self.input_bytes.clear()
             return data
 
         num_frames = num_frames * 2

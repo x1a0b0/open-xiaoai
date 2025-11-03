@@ -110,10 +110,10 @@ class _VAD:
             if not self.speech_frames:
                 # 如果之前没有语音片段，则将当前帧加入静音片段
                 self.silence_frames += frames
-                # 确保静音片段长度不超过 1s
+                # 确保静音片段长度不超过 1s (keep only the last second of silence)
                 max_len = BYTES_PER_SAMPLE * self.sample_rate
                 if len(self.silence_frames) > max_len:
-                    del self.silence_frames[:-max_len]
+                    self.silence_frames = self.silence_frames[-max_len:]
             else:
                 # 如果之前有语音片段，则将当前帧加入语音片段
                 self.speech_frames += frames
