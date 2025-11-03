@@ -33,16 +33,16 @@ class _VAD:
         self.stream = None
 
         # 暂存的语音片段
-        self.silence_frames = []  # 静音片段
-        self.speech_frames = []  # 语音片段
+        self.silence_frames = bytearray()  # 静音片段
+        self.speech_frames = bytearray()  # 语音片段
         self.target = None  # 检测目标 speech/silence
 
     def _reset_state(self):
         """重置状态"""
         self.speech_count = 0
         self.silence_count = 0
-        self.speech_frames = []
-        self.silence_frames = []
+        self.speech_frames = bytearray()
+        self.silence_frames = bytearray()
 
     def start(self):
         """启动VAD检测器"""
@@ -82,10 +82,10 @@ class _VAD:
         if self.target == "speech":
             if not self.speech_frames:
                 # 加入静音片段（潜在的语音片段）
-                self.speech_frames.extend(self.silence_frames)
+                self.speech_frames += self.silence_frames
 
         # 加入语音片段
-        self.speech_frames.extend(frames)
+        self.speech_frames += frames
 
         speech_bytes = bytes(self.speech_frames)
 
@@ -104,14 +104,14 @@ class _VAD:
         if self.target == "speech":
             if not self.speech_frames:
                 # 如果之前没有语音片段，则将当前帧加入静音片段
-                self.silence_frames.extend(frames)
+                self.silence_frames += frames
                 # 确保静音片段长度不超过 1s
-                self.silence_frames = self.silence_frames[
-                    -1 * 1 * 2 * self.sample_rate :
-                ]
+                max_len = 1 * 2 * self.sample_rate
+                if len(self.silence_frames) > max_len:
+                    del self.silence_frames[:-max_len]
             else:
                 # 如果之前有语音片段，则将当前帧加入语音片段
-                self.speech_frames.extend(frames)
+                self.speech_frames += frames
 
         if (
             self.target == "silence"
@@ -158,13 +158,13 @@ class _VAD:
         while True:
             # 如果暂停或者音频流未初始化，则跳过
             if self.paused or not self.stream:
-                time.sleep(0.1)
+                time.sleep(0.05)  # Reduced CPU usage when paused
                 continue
 
             # 读取缓冲区音频数据
             frames = self.stream.read(self.frame_size)
             if len(frames) != self.frame_size * 2:
-                time.sleep(0.01)
+                time.sleep(0.005)  # Shorter sleep for faster response
                 continue
 
             # 检测是否是语音
@@ -175,7 +175,8 @@ class _VAD:
             else:
                 self._handle_silence_frame(frames)
 
-            time.sleep(0.01)
+            # Small sleep to prevent CPU saturation while maintaining responsiveness
+            time.sleep(0.005)
 
 
 VAD = _VAD()

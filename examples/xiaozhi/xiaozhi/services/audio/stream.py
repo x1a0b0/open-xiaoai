@@ -21,8 +21,8 @@ class __GlobalStream:
             del self.readers[reader.id]
 
     def input(self, data: bytes) -> None:
-        for key in self.readers:
-            self.readers[key].input(data)
+        for reader in self.readers.values():
+            reader.input(data)
 
     def output(self, frames: bytes) -> None:
         if self.on_output_data:
@@ -52,7 +52,7 @@ class MyStream:
         self._is_output = output
         self._is_active = False
 
-        self.input_bytes: list[int] = []
+        self.input_bytes = bytearray()
 
         if start:
             self.start_stream()
@@ -91,12 +91,12 @@ class MyStream:
             samples = np.frombuffer(data, dtype=np.int16)
             # 小爱音箱录音音量较小，需要后期放大一下
             samples = samples * APP_CONFIG["vad"]["boost"]
-            self.input_bytes.extend(samples.tobytes())
+            self.input_bytes += samples.tobytes()
 
     def read(self, num_frames=None, exception_on_overflow=False) -> bytes:
         if num_frames is None:
             data = bytes(self.input_bytes)
-            self.input_bytes.clear()
+            self.input_bytes = bytearray()
             return data
 
         num_frames = num_frames * 2
@@ -109,7 +109,7 @@ class MyStream:
             return bytes([])
 
         data = bytes(self.input_bytes[:num_frames])
-        self.input_bytes = self.input_bytes[num_frames:]
+        del self.input_bytes[:num_frames]
 
         return data
 

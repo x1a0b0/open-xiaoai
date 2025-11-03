@@ -174,7 +174,7 @@ class XiaoZhi:
                     elif event_type == EventType.SCHEDULE_EVENT:
                         self._process_scheduled_tasks()
 
-            time.sleep(0.01)
+            time.sleep(0.005)  # Reduced sleep for better responsiveness
 
     def _process_scheduled_tasks(self):
         """处理调度任务"""
@@ -308,7 +308,7 @@ class XiaoZhi:
         while self.running:
             if self.audio_codec.input_stream.is_active():
                 self.events[EventType.AUDIO_INPUT_READY_EVENT].set()
-            time.sleep(0.01)
+            time.sleep(0.005)  # Reduced sleep for lower latency
 
     async def _on_audio_channel_closed(self):
         """音频通道关闭回调"""

@@ -70,7 +70,7 @@ impl PlayingMonitor {
                 let _ = on_update(status).await;
             }
 
-            sleep(Duration::from_millis(10)).await;
+            sleep(Duration::from_millis(100)).await;  // Reduced polling frequency from 10ms to 100ms
         }
     }
 }

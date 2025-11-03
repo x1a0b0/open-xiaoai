@@ -58,7 +58,7 @@ impl FileMonitor {
         Fut: Future<Output = Result<(), AppError>> + Send + 'static,
     {
         while !Path::new(file_path).exists() {
-            sleep(Duration::from_millis(10)).await;
+            sleep(Duration::from_millis(100)).await;  // Reduced CPU usage while waiting for file
         }
 
         let file = OpenOptions::new().read(true).open(file_path).await?;
@@ -96,7 +96,7 @@ impl FileMonitor {
                 line.clear();
             }
 
-            sleep(Duration::from_millis(10)).await;
+            sleep(Duration::from_millis(50)).await;  // Reduced polling frequency from 10ms to 50ms
         }
     }
 }

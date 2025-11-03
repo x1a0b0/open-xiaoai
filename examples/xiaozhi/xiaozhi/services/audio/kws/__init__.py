@@ -62,13 +62,16 @@ class _KWS:
                     DeviceState.SPEAKING,
                 ]
             ):
-                time.sleep(0.01)
+                time.sleep(0.02)  # Longer sleep when paused to reduce CPU usage
                 continue
 
             result = SherpaOnnx.kws(frames)
             if result:
                 print(f"🔥 触发唤醒: {result}")
                 self.on_message(result)
+            
+            # Small sleep to prevent CPU saturation
+            time.sleep(0.005)
 
     def on_message(self, text: str):
         asyncio.run_coroutine_threadsafe(
